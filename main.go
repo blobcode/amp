@@ -4,6 +4,7 @@ import (
 	"embed"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -16,12 +17,21 @@ var f embed.FS
 const port = 8080 // port to run on
 
 func main() {
-	http.HandleFunc("/", handler)
+
+	// use enviroment variable for port if exists
+	envport, err := strconv.Atoi(os.Getenv("PORT"))
+	if err != nil {
+		envport = port
+	}
 
 	// start
 	log.Println("welcome to amp")
-	log.Println("listening on http://localhost:" + strconv.Itoa(port))
-	err := http.ListenAndServe("localhost:"+strconv.Itoa(port), nil)
+	log.Println("listening on http://localhost:" + strconv.Itoa(envport))
+
+	// register handler
+	http.HandleFunc("/", handler)
+
+	err = http.ListenAndServe("localhost:"+strconv.Itoa(envport), nil)
 
 	if err != nil {
 		log.Fatal(err)
@@ -30,6 +40,7 @@ func main() {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 
+	// index hack
 	if r.URL.Path == "/" {
 		r.URL.Path = "index.html"
 	}
